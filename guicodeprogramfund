@@ -1,0 +1,40 @@
+import tkinter as tk
+from tkinter import ttk, scrolledtext, messagebox
+import pickle
+import os
+
+# Data file path
+data_file = 'event_management_data.pkl'
+
+# Load data from the file or create an empty structure if the file doesn't exist
+def load_data():
+    if os.path.exists(data_file):
+        with open(data_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {'employees': [], 'venues': [], 'suppliers': [], 'events': [], 'clients': [], 'guests': [], 'caterers': []}
+
+# Save data to the file
+def save_data(data):
+    with open(data_file, 'wb') as f:
+        pickle.dump(data, f)
+
+# Function to add, modify, or delete data within the GUI
+def modify_data(action, entity_type, entries):
+    data = load_data()
+    entity_id = entries['ID'].get()
+    attributes = {field: entry.get() for field, entry in entries.items() if field != 'ID'}
+
+    if action == 'add':
+        data[entity_type].append({'id': entity_id, **attributes})
+    elif action in ('delete', 'modify'):
+        for index, entity in enumerate(data[entity_type]):
+            if entity['id'] == entity_id:
+                if action == 'delete':
+                    data[entity_type].pop(index)
+                elif action == 'modify':
+                    entity.update(attributes)
+                break
+    save_data(data)
+    messagebox.showinfo("Success", f"Data {action}ed successfully.")
+    display_data()
